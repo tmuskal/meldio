@@ -1,0 +1,49 @@
+
+/**
+ *  Copyright (c) 2015, Facebook, Inc.
+ *  All rights reserved.
+ *
+ *  This source code is licensed under the BSD-style license found in the
+ *  LICENSE file in the root directory of this source tree. An additional grant
+ *  of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.renderGraphiQL = renderGraphiQL;
+
+var _package = require('../../package');
+
+var clientVersion = _package.config.clientVersion;
+var graphiqlVersion = _package.config.graphiqlVersion;
+var humaneVersion = _package.config.humaneVersion;
+var reactVersion = _package.config.reactVersion;
+
+/**
+ * When express-graphql receives a request which does not Accept JSON, but does
+ * Accept HTML, it may present GraphiQL, the in-browser GraphQL explorer IDE.
+ *
+ * When shown, it will be pre-populated with the result of having executed the
+ * requested query.
+ */
+
+function renderGraphiQL(data) {
+  var rootValue = data.rootValue || {};
+  var config = rootValue.config || {};
+  var enabledAuth = config.enabledAuth || [];
+  var isFacebookEnabled = enabledAuth.includes('facebook');
+  var isGoogleEnabled = enabledAuth.includes('google');
+  var isGithubEnabled = enabledAuth.includes('github');
+  var isPasswordEnabled = enabledAuth.includes('password');
+  var isAuthEnabled = isFacebookEnabled || isGoogleEnabled || isGithubEnabled || isPasswordEnabled;
+
+  var queryString = data.query;
+  var variablesString = data.variables ? JSON.stringify(data.variables, null, 2) : null;
+  var resultString = data.result ? JSON.stringify(data.result, null, 2) : null;
+
+  /* eslint-disable max-len */
+  return '<!--\nThe request to this GraphQL server provided the header "Accept: text/html"\nand as a result has been presented GraphiQL - an in-browser IDE for\nexploring GraphQL.\n\nIf you wish to receive JSON, provide the header "Accept: application/json" or\nadd "&raw" to the end of the URL within a browser.\n-->\n<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    html, body {\n      height: 100%;\n      margin: 0;\n      overflow: hidden;\n      width: 100%;\n    }\n  </style>\n  <link href="//cdn.jsdelivr.net/graphiql/' + graphiqlVersion + '/graphiql.css" rel="stylesheet" />\n  <link href="//cdn.jsdelivr.net/humane.js/' + humaneVersion + '/themes/jackedup.css" rel="stylesheet" />\n  <script src="//cdn.jsdelivr.net/react/' + reactVersion + '/react.min.js"></script>\n  <script src="//cdn.jsdelivr.net/react/' + reactVersion + '/react-dom.min.js"></script>\n  <script src="//cdn.jsdelivr.net/graphiql/' + graphiqlVersion + '/graphiql.min.js"></script>\n  <script src="//cdn.jsdelivr.net/meldio.client.js/' + clientVersion + '/meldio.min.js"></script>\n  <script src="//cdn.jsdelivr.net/humane.js/' + humaneVersion + '/humane.min.js"></script>\n\n  <style>\n    * {\n      margin: 0;\n    }\n\n    html, body {\n      height: 100%;\n    }\n\n    #container {\n      margin: 0 auto;\n      min-height: 100%;\n      height: 100% !important;\n    }\n\n    #graphiql-container .authpanel-spacer { padding-right: 14px; }\n  </style>\n</head>\n<body>\n  <div id="container"></div>\n  <script>\n    var notify = humane.create({\n      timeout: 2500,\n      waitForMove: true,\n      timeoutAfterMove: 1000,\n      clickToClose: true\n    });\n\n    // Collect the URL parameters\n    var parameters = {};\n    window.location.search.substr(1).split(\'&\').forEach(function (entry) {\n      var eq = entry.indexOf(\'=\');\n      if (eq >= 0) {\n        parameters[decodeURIComponent(entry.slice(0, eq))] =\n          decodeURIComponent(entry.slice(eq + 1));\n      }\n    });\n\n    // Get the url of this endpoint\n    var meldioUrl = window.location.origin;\n    var meldio = new Meldio(meldioUrl);\n\n    // Produce a Location query string from a parameter object.\n    function locationQuery(params) {\n      return \'?\' + Object.keys(params).map(function (key) {\n        return encodeURIComponent(key) + \'=\' +\n          encodeURIComponent(params[key]);\n      }).join(\'&\');\n    }\n\n    // Derive a fetch URL from the current URL, sans the GraphQL parameters.\n    var graphqlParamNames = {\n      query: true,\n      variables: true,\n      operationName: true\n    };\n\n\n    var otherParams = {};\n    for (var k in parameters) {\n      if (parameters.hasOwnProperty(k) && graphqlParamNames[k] !== true) {\n        otherParams[k] = parameters[k];\n      }\n    }\n    var fetchURL = locationQuery(otherParams);\n\n    // When the query and variables string is edited, update the URL bar so\n    // that it can be easily shared.\n    function onEditQuery(newQuery) {\n      parameters.query = newQuery;\n      updateURL();\n    }\n\n    function onEditVariables(newVariables) {\n      parameters.variables = newVariables;\n      updateURL();\n    }\n\n    function updateURL() {\n      history.replaceState(null, null, locationQuery(parameters));\n    }\n\n    var MeldioGraphiQL = React.createClass({\n      getInitialState: function() {\n        return {\n          isLoggedIn: meldio.isLoggedIn(),\n          login: \'\',\n          password: \'\'\n        };\n      },\n\n      loginListenerHandler: function(isLoggedIn) {\n        this.setState({ isLoggedIn: isLoggedIn });\n      },\n\n      componentWillMount: function() {\n        var loginHandler = this.loginListenerHandler.bind(this, true);\n        var logoutHandler = this.loginListenerHandler.bind(this, false);\n\n        this.loginListener = meldio.addListener(\'login\', loginHandler);\n        this.logoutListener = meldio.addListener(\'logout\', logoutHandler);\n      },\n\n      componentWillUnmount() {\n        this.loginListener.remove();\n        this.logoutListener.remove();\n      },\n\n      loginChangeHandler: function(e) {\n        this.setState({ login: e.target.value });\n      },\n\n      passwordChangeHandler: function(e) {\n        this.setState({ password: e.target.value });\n      },\n\n      onOAuthLogin: function(provider) {\n        meldio.loginWithOAuthPopup(provider)\n          .catch(function (err) {\n            notify.log(err.message);\n          });\n      },\n\n      onPasswordLogin: function() {\n        meldio.loginWithPassword(this.state.login, this.state.password)\n          .catch(function (err) {\n            if (err.code === \'LOGIN_REQUIRED\') {\n              notify.log(\'Login is a required field.\');\n            } else if (err.code === \'PASSWORD_REQUIRED\') {\n              notify.log(\'Password is a required field.\');\n            } else if (err.code === \'INVALID_LOGINID\') {\n              notify.log(\'Login is invalid.\');\n            } else if (err.code === \'INVALID_PASSWORD\') {\n              notify.log(\'Password is invalid.\');\n            } else {\n              notify.log(err.message);\n            }\n          });\n      },\n\n      onLogout: function () {\n        meldio.logout();\n      },\n\n      render: function() {\n        var logo = React.createElement(GraphiQL.Logo, { }, \'MELDIO\');\n        var toolbar = React.createElement(GraphiQL.Toolbar, { },\n          !this.state.isLoggedIn ? [\n            React.createElement(\'span\', { className: \'authpanel-spacer\' }),\n\n            React.createElement(\n              \'em\',\n              { },\n              \'Authentication options: \'),\n\n            ' + (isFacebookEnabled ? '\n              React.createElement(GraphiQL.ToolbarButton, {\n                title: \'Facebook\',\n                label: \'Facebook\',\n                onClick: this.onOAuthLogin.bind(this, \'facebook\')\n              }),' : '') + '\n\n            ' + (isGoogleEnabled ? '\n              React.createElement(GraphiQL.ToolbarButton, {\n                title: \'Google\',\n                label: \'Google\',\n                onClick: this.onOAuthLogin.bind(this, \'google\')\n              }),' : '') + '\n\n            ' + (isGithubEnabled ? '\n              React.createElement(GraphiQL.ToolbarButton, {\n                title: \'Github\',\n                label: \'Github\',\n                onClick: this.onOAuthLogin.bind(this, \'github\')\n              }),' : '') + '\n\n            ' + (isPasswordEnabled ? '\n              React.createElement(\'input\', {\n                type: \'text\',\n                placeholder: \'Login\',\n                tabIndex: 1,\n                value: this.state.login,\n                onChange: this.loginChangeHandler\n              }),\n              React.createElement(\'input\', {\n                type: \'password\',\n                placeholder: \'Password\',\n                tabIndex: 2,\n                value: this.state.password,\n                onChange: this.passwordChangeHandler\n              }),\n              React.createElement(\'a\', {\n                className: \'toolbar-button\',\n                title: \'Login\',\n                tabIndex: 3,\n                onClick: this.onPasswordLogin\n              }, \'Login\') ' : '') + '\n          ] : [\n            React.createElement(\'span\', { className: \'authpanel-spacer\' }),\n\n            React.createElement(GraphiQL.ToolbarButton, {\n              title: \'Logout\',\n              label: \'Logout\',\n              onClick: this.onLogout\n            })\n          ]\n        );\n\n        return (\n          React.createElement(GraphiQL, {\n            fetcher: meldio.graphql.bind(meldio),\n            onEditQuery: onEditQuery,\n            onEditVariables: onEditVariables,\n            query: ' + JSON.stringify(queryString) + ',\n            response: ' + JSON.stringify(resultString) + ',\n            variables: ' + JSON.stringify(variablesString) + '\n          }, ' + (isAuthEnabled ? '[ logo, toolbar ]' : '[ logo ]') + ')\n        );\n      }\n    });\n\n    React.render(\n      React.createElement(MeldioGraphiQL),\n      document.getElementById(\'container\'));\n  </script>\n</body>\n</html>';
+}

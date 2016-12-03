@@ -151,7 +151,7 @@ function addArgsToFields(fieldASTs, context) {
       field.isScalarList && NUMERIC_TYPES.includes(typeName) ?
         [ makeInput('aggregate', '_NumericAggregate') ] :
         [ ];
-
+    const fieldArgs = field.args.map(arg => makeInput(arg.name, arg.type));
     return {
       ...fieldAST,
       arguments: [
@@ -161,6 +161,7 @@ function addArgsToFields(fieldASTs, context) {
         ...orderByArgument,
         ...orderArgument,
         ...aggregationArgument,
+        ...fieldArgs,
       ]
     };
   });

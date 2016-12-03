@@ -62,6 +62,7 @@ export function Field(context: AnalyzerContext): FieldMapper {
       isObjectList: true,
       type: getObjectType(getListType(field)) } : {},
     hasArguments: Boolean(field.arguments && field.arguments.length),
+    args: field.arguments.map(arg => ({ name: arg.name.value, type:getObjectType(arg) })),
     directives: (field.directives || []).map(directivesMapper)
   });
 }

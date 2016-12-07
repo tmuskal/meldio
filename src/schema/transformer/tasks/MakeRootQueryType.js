@@ -92,14 +92,17 @@ export function MakeRootQueryType(
         directive.arguments[0].value,
         [ ],
         directive.parentTypeName));
-
-  const fields = [
-    makeField('node', [ makeRequiredInput('id', 'ID') ], 'Node'),
-    ...viewerField,
-    ...implicitRootPluralIdFields,
-    ...rootPluralIdFields,
-    ...rootConnectionFields,
+  let fields = [
+    ...viewerField,    
   ];
-
+  if (context.rootsOnType === '_Query'){
+    fields = [
+        makeField('node', [ makeRequiredInput('id', 'ID') ], 'Node'),
+        ...viewerField,
+        ...implicitRootPluralIdFields,
+        ...rootPluralIdFields,
+        ...rootConnectionFields,
+      ];
+  }
   return [ makeType('_Query', [ ], fields) ];
 }

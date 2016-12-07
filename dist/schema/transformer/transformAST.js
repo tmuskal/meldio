@@ -20,6 +20,8 @@ var _analyzer = require('../analyzer');
 var _tasks = require('./tasks');
 
 function transformAST(ast, schema) {
+  var rootsOnType = arguments.length <= 2 || arguments[2] === undefined ? "_Query" : arguments[2];
+
   if ((0, _jsutilsIsNullish2['default'])(ast) || (0, _jsutilsIsNullish2['default'])(schema)) {
     throw new Error('must pass ast and schema metadata.');
   }
@@ -30,11 +32,11 @@ function transformAST(ast, schema) {
     edgeTypeFields: {},
     filterArguments: {}
   };
-
   var context = {
     schema: schema,
     connections: (0, _analyzer.allConnections)(schema),
-    lists: (0, _analyzer.declaredLists)(schema)
+    lists: (0, _analyzer.declaredLists)(schema),
+    rootsOnType: rootsOnType
   };
   var visitedAst = (0, _tasks.makeVisitors)(accumulator, context).reduce(function (intermediateAst, visitor) {
     return (0, _visitor.visitAST)(intermediateAst, { leave: visitor });

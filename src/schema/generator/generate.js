@@ -95,7 +95,7 @@ export function generate(
 
   // 1. Setup resolvers for root _Query type:
   // ... node field:
-  result._typeMap._Query._fields['node'].resolve = NodeField({ schema });
+  result._typeMap[rootsOnType]._fields['node'].resolve = NodeField({ schema });
   // ... implicit plural id fields:
   implicitRootPluralIdTypes(schema)
     .forEach(definition => {
@@ -127,7 +127,7 @@ export function generate(
       const fieldName = directive.arguments[0].value;
       const node = directive.parentTypeName;
 
-      const fields = result._typeMap._Query._fields[fieldName].type._fields;
+      const fields = result._typeMap[rootsOnType]._fields[fieldName].type._fields;
       const aggFieldDefinitions = extractAggFieldDefinitions(fields);
       const filterInputObjectDefinition =
         extractFilterInputObjectDefinition(result._typeMap, node);

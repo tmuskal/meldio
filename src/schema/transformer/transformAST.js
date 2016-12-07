@@ -10,7 +10,8 @@ import { makeVisitors, makeDefinitions } from './tasks';
 
 export function transformAST(
   ast: Document,
-  schema: Schema
+  schema: Schema,
+  rootsOnType: String = "_Query"  
 ): Document {
   if (isNullish(ast) || isNullish(schema)) {
     throw new Error('must pass ast and schema metadata.');
@@ -20,13 +21,13 @@ export function transformAST(
   const accumulator: TransformerAccumulator = {
     mutations: [ ],
     edgeTypeFields: { },
-    filterArguments: { },
+    filterArguments: { }
   };
-
   const context: TransformerContext = {
     schema,
     connections: allConnections(schema),
     lists: declaredLists(schema),
+    rootsOnType
   };
   const visitedAst = makeVisitors(accumulator, context)
     .reduce(

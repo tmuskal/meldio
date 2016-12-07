@@ -108,7 +108,7 @@ function generate(transformedAST, schema, resolvers) {
 
   // 1. Setup resolvers for root _Query type:
   // ... node field:
-  result._typeMap._Query._fields['node'].resolve = NodeField({ schema: schema });
+  result._typeMap[rootsOnType]._fields['node'].resolve = NodeField({ schema: schema });
   // ... implicit plural id fields:
   (0, _analyzer.implicitRootPluralIdTypes)(schema).forEach(function (definition) {
     var name = definition.name;
@@ -132,7 +132,7 @@ function generate(transformedAST, schema, resolvers) {
     var fieldName = directive.arguments[0].value;
     var node = directive.parentTypeName;
 
-    var fields = result._typeMap._Query._fields[fieldName].type._fields;
+    var fields = result._typeMap[rootsOnType]._fields[fieldName].type._fields;
     var aggFieldDefinitions = extractAggFieldDefinitions(fields);
     var filterInputObjectDefinition = extractFilterInputObjectDefinition(result._typeMap, node);
     var orderInputObjectDefinition = extractOrderInputObjectDefinition(result._typeMap, node);

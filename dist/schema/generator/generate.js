@@ -109,6 +109,9 @@ function generate(transformedAST, schema, resolvers) {
   // 1. Setup resolvers for root _Query type:
   // ... node field:
   result._typeMap[rootsOnType]._fields['node'].resolve = NodeField({ schema: schema });
+  if (rootsOnType !== '_Query') {
+    result._typeMap._Query._fields['node'].resolve = NodeField({ schema: schema });
+  }
   // ... implicit plural id fields:
   (0, _analyzer.implicitRootPluralIdTypes)(schema).forEach(function (definition) {
     var name = definition.name;

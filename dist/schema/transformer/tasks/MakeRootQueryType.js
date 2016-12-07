@@ -61,7 +61,7 @@ function MakeRootQueryType(accumulator, context) {
   var viewerField = (0, _analyzer.rootViewerDirectives)(context.schema).map(function (directive) {
     return (0, _ast.makeField)(directive.arguments[0].value, [], directive.parentTypeName);
   });
-  var fields = [].concat(_toConsumableArray(viewerField));
+  var fields = [(0, _ast.makeField)('node', [(0, _ast.makeRequiredInput)('id', 'ID')], 'Node')].concat(_toConsumableArray(viewerField));
   if (context.rootsOnType === '_Query') {
     fields = [(0, _ast.makeField)('node', [(0, _ast.makeRequiredInput)('id', 'ID')], 'Node')].concat(_toConsumableArray(viewerField), _toConsumableArray(implicitRootPluralIdFields), _toConsumableArray(rootPluralIdFields), _toConsumableArray(rootConnectionFields));
   }

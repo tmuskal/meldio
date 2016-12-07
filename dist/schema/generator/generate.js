@@ -72,6 +72,8 @@ function extractListOrderInputObjectDefinition(typeMap, typeName) {
 // resolvers.  TODO: replace with proper codegen
 
 function generate(transformedAST, schema, resolvers) {
+  var rootsOnType = arguments.length <= 3 || arguments[3] === undefined ? "_Query" : arguments[3];
+
   if ((0, _jsutilsIsNullish2['default'])(transformedAST) || (0, _jsutilsIsNullish2['default'])(schema) || (0, _jsutilsIsNullish2['default'])(resolvers)) {
     throw new Error('must pass transformedAST, schema and resolvers.');
   }
@@ -112,7 +114,7 @@ function generate(transformedAST, schema, resolvers) {
     var name = definition.name;
     var fieldName = (0, _jsutilsCasing.camelCase)(definition.name);
 
-    result._typeMap._Query._fields[fieldName].resolve = definition.kind === 'type' ? TypePluralIdField({ schema: schema, name: name, field: 'id' }) : definition.kind === 'union' ? UnionPluralIdField({ schema: schema, name: name }) : definition.kind === 'interface' ? InterfacePluralIdField({ schema: schema, name: name }) :
+    result._typeMap[rootsOnType]._fields[fieldName].resolve = definition.kind === 'type' ? TypePluralIdField({ schema: schema, name: name, field: 'id' }) : definition.kind === 'union' ? UnionPluralIdField({ schema: schema, name: name }) : definition.kind === 'interface' ? InterfacePluralIdField({ schema: schema, name: name }) :
     // istanbul ignore next
     function () {
       return null;
@@ -123,7 +125,7 @@ function generate(transformedAST, schema, resolvers) {
     var fieldName = directive.arguments[0].value;
     var name = directive.parentTypeName;
     var field = directive.parentFieldName;
-    result._typeMap._Query._fields[fieldName].resolve = TypePluralIdField({ schema: schema, name: name, field: field });
+    result._typeMap[rootsOnType]._fields[fieldName].resolve = TypePluralIdField({ schema: schema, name: name, field: field });
   });
   // ... root connections:
   (0, _analyzer.rootConnectionDirectives)(schema).map(function (directive) {
@@ -135,7 +137,7 @@ function generate(transformedAST, schema, resolvers) {
     var filterInputObjectDefinition = extractFilterInputObjectDefinition(result._typeMap, node);
     var orderInputObjectDefinition = extractOrderInputObjectDefinition(result._typeMap, node);
 
-    result._typeMap._Query._fields[fieldName].resolve = ConnectionField({
+    result._typeMap[rootsOnType]._fields[fieldName].resolve = ConnectionField({
       schema: schema,
       node: node,
       aggFieldDefinitions: aggFieldDefinitions,

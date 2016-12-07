@@ -54,7 +54,8 @@ function extractListOrderInputObjectDefinition(typeMap, typeName) {
 export function generate(
   transformedAST: Document,
   schema: any,
-  resolvers: any
+  resolvers: any,
+  rootsOnType: String = "_Query"
 ): GraphQLSchema {
   if (isNullish(transformedAST) || isNullish(schema) || isNullish(resolvers)) {
     throw new Error('must pass transformedAST, schema and resolvers.');
@@ -101,7 +102,7 @@ export function generate(
       const name = definition.name;
       const fieldName = camelCase(definition.name);
 
-      result._typeMap._Query._fields[fieldName]
+      result._typeMap[rootsOnType]._fields[fieldName]
         .resolve = definition.kind === 'type' ?
                      TypePluralIdField({ schema, name, field: 'id' }) :
                    definition.kind === 'union' ?
@@ -117,7 +118,7 @@ export function generate(
       const fieldName = directive.arguments[0].value;
       const name = directive.parentTypeName;
       const field = directive.parentFieldName;
-      result._typeMap._Query._fields[fieldName]
+      result._typeMap[rootsOnType]._fields[fieldName]
         .resolve = TypePluralIdField({ schema, name, field });
     });
   // ... root connections:
@@ -133,7 +134,7 @@ export function generate(
       const orderInputObjectDefinition =
         extractOrderInputObjectDefinition(result._typeMap, node);
 
-      result._typeMap._Query._fields[fieldName]
+      result._typeMap[rootsOnType]._fields[fieldName]
         .resolve = ConnectionField({
           schema,
           node,

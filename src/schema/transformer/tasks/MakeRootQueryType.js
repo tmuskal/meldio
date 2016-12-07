@@ -93,6 +93,7 @@ export function MakeRootQueryType(
         [ ],
         directive.parentTypeName));
   let fields = [
+    makeField('node', [ makeRequiredInput('id', 'ID') ], 'Node'),
     ...viewerField,    
   ];
   if (context.rootsOnType === '_Query'){

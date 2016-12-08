@@ -286,14 +286,23 @@ function CRUD(context) {
         while (1) switch (context$2$0.prev = context$2$0.next) {
           case 0:
             mongoUpdate = updateTransformer(type, update);
-            context$2$0.next = 3;
-            return _regeneratorRuntime.awrap(db.collection(type).updateOne({ _id: id }, mongoUpdate, writeOptions));
+
+            if (!(_Object$keys(mongoUpdate).length === 0)) {
+              context$2$0.next = 3;
+              break;
+            }
+
+            return context$2$0.abrupt('return', true);
 
           case 3:
+            context$2$0.next = 5;
+            return _regeneratorRuntime.awrap(db.collection(type).updateOne({ _id: id }, mongoUpdate, writeOptions));
+
+          case 5:
             result = context$2$0.sent;
             return context$2$0.abrupt('return', result.result && result.result.ok === 1 && result.matchedCount === 1);
 
-          case 5:
+          case 7:
           case 'end':
             return context$2$0.stop();
         }

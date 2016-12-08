@@ -202,7 +202,9 @@ export function CRUD(context) {
 
     async updateNode(type, id, update) {
       const mongoUpdate = updateTransformer(type, update);
-
+      if (Object.keys(mongoUpdate).length === 0) {
+        return true;
+      }
       const result = await db
         .collection(type)
         .updateOne({ _id: id }, mongoUpdate, writeOptions);

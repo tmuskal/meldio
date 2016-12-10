@@ -611,19 +611,9 @@ function CRUD(context) {
 
             case 10:
               result = context$2$0.sent;
-
-              if (!result.deletedCount) {
-                context$2$0.next = 14;
-                break;
-              }
-
-              context$2$0.next = 14;
-              return _regeneratorRuntime.awrap(db.collection(_common.EDGE_COLLECTION).deleteMany({ $or: [{ nodeId: { $in: ids } }, { relatedId: { $in: ids } }] }, writeOptions));
-
-            case 14:
               return context$2$0.abrupt('return', ids);
 
-            case 15:
+            case 12:
             case 'end':
               return context$2$0.stop();
           }
@@ -674,3 +664,11 @@ function CRUD(context) {
 }
 
 // delete related edges
+
+// if (result.deletedCount) {
+//   await db
+//     .collection(EDGE_COLLECTION)
+//     .deleteMany(
+//       { $or: [ { nodeId: { $in: ids } },
+//                { relatedId: { $in: ids } } ] }, writeOptions);
+// }

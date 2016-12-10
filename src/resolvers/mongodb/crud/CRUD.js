@@ -394,13 +394,13 @@ export function CRUD(context) {
                 {relatedId: nodeId, relatedField: nodeField, nodeId: {$in: ids}}
             ] }, writeOptions);
 
-        if (result.deletedCount) {
-          await db
-            .collection(EDGE_COLLECTION)
-            .deleteMany(
-              { $or: [ { nodeId: { $in: ids } },
-                       { relatedId: { $in: ids } } ] }, writeOptions);
-        }
+        // if (result.deletedCount) {
+        //   await db
+        //     .collection(EDGE_COLLECTION)
+        //     .deleteMany(
+        //       { $or: [ { nodeId: { $in: ids } },
+        //                { relatedId: { $in: ids } } ] }, writeOptions);
+        // }
 
         return ids;
       },
